@@ -7,6 +7,7 @@
 
 # File: migrowd_final.RDS
 
+migrowd_final <- readRDS("C:/Users/ameth/Desktop/THESIS/Study 1/diet.data/migrowd_final.rds")
 View(migrowd_final)
 
 ###================= Table 1. Sociodemographics characteristics =============####
@@ -123,7 +124,7 @@ round(prop.table(table(df6$INCOME)) *100, 2)
 sum(is.na(df6$INCOME)) #count numbers of NAs
 sum(is.na(migrowd_final$FAMILY_INCOM)) #count numbers of NAs
 
-###================= Table 2. Sociodemographics characteristics =============####
+###================= Table 2. Recruitment and Withdrew =============####
 View(migrowd_final)
 
 #1 Recruitment approach
@@ -166,6 +167,9 @@ recruitment_log <- recruitment_log %>%
   ))
 round(prop.table(table(recruitment_log$followup_issues)) *100, 2)
 
+###================= Table 3. Completion characteristics for stool sample collection  =============####
+View(migrowd_final)
+
 #6 Completed stool collection
 View(migrowd_final)
 table(migrowd_final$stool_collection_status)
@@ -196,7 +200,7 @@ round(prop.table(table(df7$days_category)) *100, 2)
 sum(is.na(df7$days_category)) #NAs = 159
 
 #9 Interval of ASA24 and Stool collection
-df8 <- migrowd_final #Read from CSV file
+df8 <- migrowd_final 
 df8$asa1_completed<- as.Date(df8$asa1_completed) #Convert character columns to Date format
 df8$stool_received <- as.Date(df8$stool_received) #Convert character columns to Date format
 df8$days_difference <- as.numeric(difftime(df8$stool_received, df8$asa1_completed, units = "days")) #Calculate age for all rows
@@ -216,3 +220,93 @@ df8 <- df8 %>%
 table(df8$days_category) #stool completed 1 - 326 days before ASA24 = 14
 round(prop.table(table(df8$days_category)) *100, 2)
 sum(is.na(df7$days_category)) #NAs = 159
+
+###================= Table 4. Completion of ASA24 =============####
+View(migrowd_final)
+
+#1 Completed first ASA24 and second ASA24
+#1a. First ASA24
+table(migrowd_final$asa1_status)
+round(prop.table(table(migrowd_final$asa1_status)) *100, 2)
+#1b. Second ASA24
+table(migrowd_final$asa2_status)
+round(prop.table(table(migrowd_final$asa2_status)) *100, 2)
+
+#2 Number of recalls
+#2a. First ASA24
+table(migrowd_final$asa1_remind_ct) #participants with no recalls will be count as 1
+migrowd_final$asa1_remind_ct <- ifelse(migrowd_final$asa1_remind_ct %in% c(0), 1, migrowd_final$asa1_remind_ct)
+table(migrowd_final$asa1_remind_ct)
+round(prop.table(table(migrowd_final$asa1_remind_ct)) *100, 2)
+
+#1b. Second ASA24
+table(migrowd_final$asa2_remind_ct)
+migrowd_final$asa2_remind_ct <- ifelse(migrowd_final$asa2_remind_ct %in% c(0), 1, migrowd_final$asa2_remind_ct)
+table(migrowd_final$asa2_remind_ct)
+round(prop.table(table(migrowd_final$asa2_remind_ct)) *100, 2)
+
+#3. Number of recalls to complete ASA24
+#3a. First ASA24: Contingency table
+table(migrowd_final$asa1_remind_ct, migrowd_final$asa1_status)
+prop.table(table(migrowd_final$asa1_remind_ct, migrowd_final$asa1_status), margin = 1) * 100
+
+#3b. Second ASA24: Contingency table
+table(migrowd_final$asa2_remind_ct, migrowd_final$asa2_status)
+prop.table(table(migrowd_final$asa1_remind_ct, migrowd_final$asa1_status), margin = 1) * 100
+
+#4 Interval between enrolment to first ASA24 completion
+df9 <- migrowd_final #Read from CSV file
+df9$asa1_completed<- as.Date(df9$asa1_completed) #Convert character columns to Date format
+df9$enrol_date <- as.Date(df9$enrol_date) #Convert character columns to Date format
+df9$days_difference <- as.numeric(difftime(df9$asa1_completed, df9$enrol_date, units = "days")) #Calculate age for all rows
+table(df9$days_difference)
+library(dplyr)
+df9 <- df9 %>%
+  mutate(days_category = case_when(
+    days_difference >= 0 & days_difference <= 7 ~ "1 week",
+    days_difference >= 7 & days_difference <= 14 ~ "2 week",
+    days_difference >= 14 & days_difference <= 30 ~ "4 week",
+    days_difference >= 30 & days_difference <= 60 ~ "8 week",
+    days_difference > 60 ~ "More than 2 months",
+    days_difference < 0 ~ "incorrect protocols",
+    TRUE ~ as.character(days_difference)  
+  ))
+table(df9$days_category) #stool completed 1 - 326 days before ASA24 = 4
+round(prop.table(table(df9$days_category)) *100, 2)
+sum(is.na(df9$days_category)) #NAs = 141
+
+#5 Interval between enrolment to second ASA24 completion
+df9 <- migrowd_final #Read from CSV file
+df9$asa2_completed<- as.Date(df9$asa2_completed) #Convert character columns to Date format
+df9$enrol_date <- as.Date(df9$enrol_date) #Convert character columns to Date format
+df9$days_interval <- as.numeric(difftime(df9$asa2_completed, df9$enrol_date, units = "days")) #Calculate age for all rows
+table(df9$days_interval)
+library(dplyr)
+df9 <- df9 %>%
+  mutate(days_interval = case_when(
+    days_interval >= 0 & days_interval <= 14 ~ "2 week",
+    days_interval >= 14 & days_interval <= 30 ~ "4 week",
+    days_interval >= 30 & days_interval <= 60 ~ "8 week",
+    days_interval > 60 ~ "More than 2 months",
+    days_interval < 0 ~ "incorrect protocols",
+    TRUE ~ as.character(days_interval)  
+  ))
+table(df9$days_interval) #stool completed 1 - 326 days before ASA24 = 1
+round(prop.table(table(df9$days_interval)) *100, 2)
+sum(is.na(df9$days_category)) #NAs = 141
+
+#6. ASA24 issues
+table(migrowd_final$asa_issues)
+df9 <- migrowd_final
+library(dplyr)
+df9 <- df9 %>%
+  mutate(asa_issues = case_when(
+    asa_issues == "1, 4" ~ "4",
+    asa_issues == "2, 5" ~ "2",
+    asa_issues == "4, 7, 9" ~ "9",
+    asa_issues == "4, 9" ~ "4",
+    asa_issues == "5, 9" ~ "9",
+    TRUE ~ asa_issues
+  ))
+table(df9$asa_issues)
+round(prop.table(table(df9$asa_issues)) *100, 2)
